@@ -16,6 +16,11 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
         IERC20 _tokenB,
         uint256 _amountA
     ) external {
+        require(
+            _tokenA == WETH || _tokenB == WETH,
+            "One of tokens must be WETH"
+        );
+
         _tokenA.transferFrom(msg.sender, address(this), _amountA);
 
         address tokenPair = UNISWAP_V2_FACTORY.getPair(
@@ -33,6 +38,7 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
         } else {
             swapAmount = getSwapAmount(reserve1, _amountA);
         }
+
         _swap(_tokenA, _tokenB, swapAmount);
         _addLiquidity(_tokenA, _tokenB);
     }
@@ -57,6 +63,7 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
      */
     function getSwapAmount(uint256 r, uint256 a) public pure returns (uint256) {
         return
-            Babylonian.sqrt(r * (r * 3988009 + a * 3988000) - r * 1997) / 1994;
+            (Babylonian.sqrt(r * (r * 3988009 + a * 3988000)) - r * 1997) /
+            1994;
     }
 }
