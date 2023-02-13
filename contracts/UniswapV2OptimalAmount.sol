@@ -4,11 +4,10 @@ pragma solidity 0.8.17;
 import "@uniswap/lib/contracts/libraries/Babylonian.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
+import "./interfaces/IUniswapV2OptimalAmount.sol";
 import "./UniswapV2.sol";
 
-//import "./libraries/Sqrt.sol";
-
-contract UniswapV2OptimalAmount is UniswapV2 {
+contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
     IERC20 private constant WETH =
         IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 

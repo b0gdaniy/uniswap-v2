@@ -6,9 +6,6 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 
 import "./interfaces/IUniswapV2.sol";
 
-//import "./interfaces/IUniswapV2Router.sol";
-//import "./interfaces/IUniswapV2Factory.sol";
-
 contract UniswapV2 is IUniswapV2 {
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
