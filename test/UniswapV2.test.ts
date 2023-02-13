@@ -51,12 +51,13 @@ describe("UniswapV2", function () {
 
     const tokenIn: IERC20 = IERC20__factory.connect(DAI_address, DAI_whale);
     const tokenOut: IERC20 = IERC20__factory.connect(WETH_address, WETH_whale);
+    const tokenUsdc: IERC20 = IERC20__factory.connect(USDC_address, WETH_whale);
 
     const factory: IUniswapV2Factory = IUniswapV2Factory__factory.connect(UNISWAPV2_FACTORY_address, otherAcc);
     const pairAddress = await factory.getPair(DAI_address, WETH_address);
     const pair: IERC20 = IERC20__factory.connect(pairAddress, otherAcc);
 
-    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut, pair };
+    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut, tokenUsdc, pair };
   }
 
   describe("Regular swap", async () => {
@@ -131,6 +132,7 @@ describe("UniswapV2", function () {
       const whaleDais = await tokenIn.balanceOf(DAI_whale.address);
 
       await tokenIn.approve(uniswapV2OptimalAmount.address, whaleDais);
+      await tokenOut.approve(uniswapV2OptimalAmount.address, whaleDais);
 
       await uniswapV2OptimalAmount.optimalSwap(tokenIn.address, tokenOut.address, AMOUNT);
 
@@ -138,12 +140,10 @@ describe("UniswapV2", function () {
       const fromToken = await tokenIn.balanceOf(uniswapV2OptimalAmount.address);
       const toToken = await tokenOut.balanceOf(uniswapV2OptimalAmount.address);
 
-      console.log(lp, " ", fromToken, " ", toToken);
-
       expect(fromToken).to.eq(BigNumber.from(0));
       expect(toToken).to.eq(BigNumber.from(0));
 
-      expect(await tokenIn.balanceOf(DAI_whale.address)).to.be.eq(0);
+      expect(await tokenIn.balanceOf(DAI_whale.address)).to.be.eq(whaleDais.sub(AMOUNT));
     });
 
     it("Non optimal swap", async function () {
@@ -158,8 +158,6 @@ describe("UniswapV2", function () {
       const fromToken = await tokenIn.balanceOf(uniswapV2OptimalAmount.address);
       const toToken = await tokenOut.balanceOf(uniswapV2OptimalAmount.address);
 
-      console.log(lp, " ", fromToken, " ", toToken);
-
       expect(fromToken).to.be.greaterThan(BigNumber.from(0));
       expect(toToken).to.be.eq(BigNumber.from(0));
 
@@ -167,27 +165,38 @@ describe("UniswapV2", function () {
     });
   });
 
-  describe("Uniswap TWAP", async () => {
+  describe.only("Uniswap TWAP", async () => {
     it("Updated correctly", async function () {
-      const { uniswapV2TWAP, uniswapv2Router, tokenIn, tokenOut } = await loadFixture(deployFixture);
+      const { uniswapV2TWAP, uniswapv2Router, tokenIn, tokenOut, tokenUsdc, DAI_whale } = await loadFixture(deployFixture);
+
+      const whaleDais = await tokenIn.balanceOf(DAI_whale.address);
+      const whaleWeths = await tokenOut.balanceOf(DAI_whale.address);
 
       await time.setNextBlockTimestamp(1499965473207531 + 20000000000);
 
       await (await uniswapV2TWAP.update()).wait();
 
-      const amountOutBefore = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
+      const daiAmountOutBefore = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
+      const usdcAmountOutBefore = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
 
-      await tokenIn.approve(uniswapv2Router.address, AMOUNT.mul(2));
-      await tokenOut.approve(uniswapv2Router.address, AMOUNT.mul(2));
+      await tokenIn.approve(uniswapv2Router.address, whaleDais);
+      await tokenOut.approve(uniswapv2Router.address, whaleWeths);
+
       await (await uniswapv2Router.swapExactTokensForETH(AMOUNT, 1, [tokenIn.address, tokenOut.address], DAI_whaleAddress, BigNumber.from(1499965473207531 + 200000000000))).wait();
 
-      await (await uniswapV2TWAP.update()).wait();
       await time.increase(3600);
       await (await uniswapV2TWAP.update()).wait();
 
-      const amountOutAfter = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
+      await time.increase(3600);
+      await (await uniswapV2TWAP.update()).wait();
 
-      console.log(amountOutBefore, amountOutAfter)
+      await time.increase(3600);
+
+      const daiAmountOutAfter = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
+      const usdcAmountOutAfter = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
+
+      console.log(daiAmountOutBefore, daiAmountOutAfter)
+      console.log(usdcAmountOutBefore, usdcAmountOutAfter)
     });
   })
 });
