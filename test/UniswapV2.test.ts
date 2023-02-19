@@ -165,24 +165,23 @@ describe("UniswapV2", function () {
     });
   });
 
-  describe.only("Uniswap TWAP", async () => {
+  describe("Uniswap TWAP", async () => {
     it("Updated correctly", async function () {
       const { uniswapV2TWAP, uniswapv2Router, tokenIn, tokenOut, tokenUsdc, DAI_whale } = await loadFixture(deployFixture);
+
+      const now = await time.latest();
 
       const whaleDais = await tokenIn.balanceOf(DAI_whale.address);
       const whaleWeths = await tokenOut.balanceOf(DAI_whale.address);
 
-      await time.setNextBlockTimestamp(1499965473207531 + 20000000000);
+      await time.setNextBlockTimestamp(now + 2000);
 
       await (await uniswapV2TWAP.update()).wait();
-
-      const daiAmountOutBefore = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
-      const usdcAmountOutBefore = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
 
       await tokenIn.approve(uniswapv2Router.address, whaleDais);
       await tokenOut.approve(uniswapv2Router.address, whaleWeths);
 
-      await (await uniswapv2Router.swapExactTokensForETH(AMOUNT, 1, [tokenIn.address, tokenOut.address], DAI_whaleAddress, BigNumber.from(1499965473207531 + 200000000000))).wait();
+      await (await uniswapv2Router.swapExactTokensForETH(AMOUNT, 1, [tokenIn.address, tokenOut.address], DAI_whaleAddress, BigNumber.from(now + 20000))).wait();
 
       await time.increase(3600);
       await (await uniswapV2TWAP.update()).wait();
@@ -194,9 +193,6 @@ describe("UniswapV2", function () {
 
       const daiAmountOutAfter = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
       const usdcAmountOutAfter = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
-
-      console.log(daiAmountOutBefore, daiAmountOutAfter)
-      console.log(usdcAmountOutBefore, usdcAmountOutAfter)
     });
   })
 });
