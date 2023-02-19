@@ -1,7 +1,7 @@
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { IERC20, IERC20__factory, IUniswapV2Factory__factory, UniswapV2OptimalAmount, IUniswapV2Factory, IUniswapV2Router02, IUniswapV2Router02__factory, UniswapV2, UniswapV2TWAP, IUniswapV2, IUniswapV2Pair, IUniswapV2Pair__factory } from "../typechain-types";
+import { IERC20, IERC20__factory, IUniswapV2Factory__factory, UniswapV2OptimalAmount, IUniswapV2Factory, IUniswapV2Router02, IUniswapV2Router02__factory, UniswapV2, UniswapV2TWAP, IUniswapV2, IUniswapV2Pair, IUniswapV2Pair__factory, UniswapV2FlashSwap } from "../typechain-types";
 import dotenv from "dotenv";
 import { BigNumber } from "ethers";
 import { timeStamp } from "console";
@@ -47,6 +47,10 @@ describe("UniswapV2", function () {
     const uniswapV2TWAP: UniswapV2TWAP = await UniswapV2TWAP.deploy(UNISWAPV2_DAI_USDC_PAIR_address);
     await uniswapV2OptimalAmount.deployed();
 
+    const UniswapV2FlashSwap = await ethers.getContractFactory("UniswapV2FlashSwap", DAI_whale);
+    const uniswapV2FlashSwap: UniswapV2FlashSwap = await UniswapV2FlashSwap.deploy();
+    await uniswapV2FlashSwap.deployed();
+
     const uniswapv2Router: IUniswapV2Router02 = IUniswapV2Router02__factory.connect(UNISWAPV2_ROUTER_address, DAI_whale);
 
     const tokenIn: IERC20 = IERC20__factory.connect(DAI_address, DAI_whale);
@@ -57,7 +61,7 @@ describe("UniswapV2", function () {
     const pairAddress = await factory.getPair(DAI_address, WETH_address);
     const pair: IERC20 = IERC20__factory.connect(pairAddress, otherAcc);
 
-    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut, tokenUsdc, pair };
+    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, uniswapV2FlashSwap, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut, tokenUsdc, pair };
   }
 
   describe("Regular swap", async () => {
@@ -194,5 +198,12 @@ describe("UniswapV2", function () {
       const daiAmountOutAfter = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
       const usdcAmountOutAfter = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
     });
-  })
+  });
+
+  describe("Uniswap Flash Swap", async () => {
+    it("Take flash swaps correctly", async function () {
+      const { uniswapV2FlashSwap, tokenIn, tokenOut, tokenUsdc, DAI_whale } = await loadFixture(deployFixture);
+
+    });
+  });
 });
