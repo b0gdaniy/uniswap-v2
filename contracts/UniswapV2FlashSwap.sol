@@ -8,15 +8,9 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Callee.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
-contract UniswapV2FlashSwap is IUniswapV2Callee {
-    event FlashSwap(
-        address indexed sender,
-        address indexed token0,
-        address indexed token1,
-        uint256 amount0,
-        uint256 admount1
-    );
+import "./interfaces/IUniswapV2FlashSwap.sol";
 
+contract UniswapV2FlashSwap is IUniswapV2Callee, IUniswapV2FlashSwap {
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
     IERC20 private constant WETH =
