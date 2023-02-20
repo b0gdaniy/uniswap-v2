@@ -9,6 +9,14 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
 contract UniswapV2FlashSwap is IUniswapV2Callee {
+    event FlashSwap(
+        address indexed sender,
+        address indexed token0,
+        address indexed token1,
+        uint256 amount0,
+        uint256 admount1
+    );
+
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
     IERC20 private constant WETH =
@@ -27,6 +35,8 @@ contract UniswapV2FlashSwap is IUniswapV2Callee {
 
         bytes memory data = abi.encode(_tokenBorrow, _amount);
         IUniswapV2Pair(pair).swap(amount0Out, amount1Out, address(this), data);
+
+        emit FlashSwap(msg.sender, token0, token1, amount0Out, amount1Out);
     }
 
     function uniswapV2Call(
