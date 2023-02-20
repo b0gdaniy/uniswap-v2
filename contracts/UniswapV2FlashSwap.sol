@@ -33,7 +33,7 @@ contract UniswapV2FlashSwap is IUniswapV2Callee {
         uint256 amount0Out = _tokenBorrow == token0 ? _amount : 0;
         uint256 amount1Out = _tokenBorrow == token1 ? _amount : 0;
 
-        bytes memory data = abi.encode(_tokenBorrow, _amount);
+        bytes memory data = abi.encode(_tokenBorrow, msg.sender, _amount);
         IUniswapV2Pair(pair).swap(amount0Out, amount1Out, address(this), data);
 
         emit FlashSwap(msg.sender, token0, token1, amount0Out, amount1Out);
@@ -41,8 +41,8 @@ contract UniswapV2FlashSwap is IUniswapV2Callee {
 
     function uniswapV2Call(
         address sender,
-        uint256 amount0,
-        uint256 amount1,
+        uint256, //amount0
+        uint256, // amount1
         bytes calldata data
     ) external {
         address token0 = IUniswapV2Pair(msg.sender).token0();
@@ -52,14 +52,16 @@ contract UniswapV2FlashSwap is IUniswapV2Callee {
         require(msg.sender == pair, "Only UniswapV2Pair!");
         require(sender == address(this), "Only UniswapV2FlashSwap!");
 
-        (address tokenBorrow, uint256 amount) = abi.decode(
+        (address tokenBorrow, address caller, uint256 amount) = abi.decode(
             data,
-            (address, uint256)
+            (address, address, uint256)
         );
 
         // fees = 0.3%
-        uint256 fee = ((amount * 3) / 997) + 1;
+        uint256 fee = (amount * 3) / 997 + 1;
         uint256 amountToRepay = amount + fee;
+
+        IERC20(tokenBorrow).transferFrom(caller, address(this), fee);
 
         IERC20(tokenBorrow).transfer(pair, amountToRepay);
     }
