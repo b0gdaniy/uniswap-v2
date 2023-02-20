@@ -10,8 +10,9 @@ dotenv.config();
 const DAI_address: string = process.env.DAI!;
 const USDC_address: string = process.env.USDC!;
 const WETH_address: string = process.env.WETH!;
+
 const DAI_whaleAddress: string = process.env.DAI_WHALE!;
-const WETH_whaleAddress: string = process.env.WETH_WHALE!;
+const USDC_whaleAddress: string = process.env.USDC_WHALE!;
 
 const UNISWAPV2_ROUTER_address: string = process.env.UNISWAPV2_ROUTER!;
 const UNISWAPV2_FACTORY_address: string = process.env.UNISWAPV2_FACTORY!;
@@ -29,9 +30,9 @@ describe("UniswapV2", function () {
 
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
-      params: [WETH_whaleAddress],
+      params: [DAI_whaleAddress],
     });
-    const WETH_whale = await ethers.getSigner(DAI_whaleAddress);
+    //const DAI_whale = await ethers.getSigner(DAI_whaleAddress);
 
     const [otherAcc] = await ethers.getSigners();
 
@@ -52,16 +53,17 @@ describe("UniswapV2", function () {
     await uniswapV2FlashSwap.deployed();
 
     const uniswapv2Router: IUniswapV2Router02 = IUniswapV2Router02__factory.connect(UNISWAPV2_ROUTER_address, DAI_whale);
+    const uniswapv2Factory: IUniswapV2Factory = IUniswapV2Factory__factory.connect(UNISWAPV2_ROUTER_address, DAI_whale);
 
     const tokenIn: IERC20 = IERC20__factory.connect(DAI_address, DAI_whale);
-    const tokenOut: IERC20 = IERC20__factory.connect(WETH_address, WETH_whale);
-    const tokenUsdc: IERC20 = IERC20__factory.connect(USDC_address, WETH_whale);
+    const tokenOut: IERC20 = IERC20__factory.connect(WETH_address, DAI_whale);
+    const tokenUsdc: IERC20 = IERC20__factory.connect(USDC_address, DAI_whale);
 
-    const factory: IUniswapV2Factory = IUniswapV2Factory__factory.connect(UNISWAPV2_FACTORY_address, otherAcc);
-    const pairAddress = await factory.getPair(DAI_address, WETH_address);
+    const uniswapV2factory: IUniswapV2Factory = IUniswapV2Factory__factory.connect(UNISWAPV2_FACTORY_address, otherAcc);
+    const pairAddress = await uniswapV2factory.getPair(DAI_address, WETH_address);
     const pair: IERC20 = IERC20__factory.connect(pairAddress, otherAcc);
 
-    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, uniswapV2FlashSwap, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut, tokenUsdc, pair };
+    return { uniswapV2, uniswapV2OptimalAmount, uniswapV2TWAP, uniswapv2Router, uniswapV2FlashSwap, uniswapV2factory, DAI_whale, otherAcc, tokenIn, tokenOut, tokenUsdc, pair };
   }
 
   describe("Regular swap", async () => {
@@ -72,23 +74,26 @@ describe("UniswapV2", function () {
       expect(await tokenOut.balanceOf(otherAcc.address)).to.be.eq(0);
 
       await tokenIn.approve(uniswapV2.address, whaleDais);
-      await uniswapV2.swap(tokenIn.address, tokenOut.address, whaleDais, otherAcc.address, (Date.now()) + 1000);
+      await uniswapV2.swap(tokenIn.address, tokenOut.address, whaleDais, otherAcc.address, await time.latest() + 1000);
 
       expect(await tokenIn.balanceOf(DAI_whale.address)).to.be.eq(0);
       expect(await tokenOut.balanceOf(otherAcc.address)).to.be.greaterThan(0);
     });
 
     it("Adds/removes liquidity", async function () {
-      const { uniswapV2, DAI_whale, WETH_whale, otherAcc, tokenIn, tokenOut } = await loadFixture(deployFixture);
+      const { uniswapV2, DAI_whale, otherAcc, tokenIn, tokenOut } = await loadFixture(deployFixture);
 
-      await (await tokenIn.transfer(otherAcc.address, await tokenIn.balanceOf(DAI_whale.address))).wait();
-      await (await tokenOut.transfer(otherAcc.address, await tokenOut.balanceOf(WETH_whale.address))).wait();
+      let weths = await tokenIn.balanceOf(DAI_whale.address);
+      let dais = await tokenOut.balanceOf(DAI_whale.address);
 
-      const dais = await tokenIn.balanceOf(otherAcc.address);
-      const weths = await tokenOut.balanceOf(otherAcc.address);
+      await (await tokenIn.transfer(otherAcc.address, weths)).wait();
+      await (await tokenOut.transfer(otherAcc.address, dais)).wait();
 
-      await tokenIn.connect(otherAcc).approve(uniswapV2.address, AMOUNT);
-      await tokenOut.connect(otherAcc).approve(uniswapV2.address, AMOUNT);
+      dais = await tokenIn.balanceOf(otherAcc.address);
+      weths = await tokenOut.balanceOf(otherAcc.address);
+
+      await tokenIn.connect(otherAcc).approve(uniswapV2.address, ethers.constants.MaxUint256);
+      await tokenOut.connect(otherAcc).approve(uniswapV2.address, ethers.constants.MaxUint256);
       const addLiquidity = await uniswapV2.connect(otherAcc).addLiquidity(tokenIn.address, tokenOut.address, AMOUNT, AMOUNT, (Date.now()) + 1000);
       await addLiquidity.wait();
 
@@ -194,16 +199,23 @@ describe("UniswapV2", function () {
       await (await uniswapV2TWAP.update()).wait();
 
       await time.increase(3600);
-
-      const daiAmountOutAfter = await uniswapV2TWAP.consult(tokenIn.address, AMOUNT);
-      const usdcAmountOutAfter = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
     });
   });
 
   describe("Uniswap Flash Swap", async () => {
     it("Take flash swaps correctly", async function () {
-      const { uniswapV2FlashSwap, tokenIn, tokenOut, tokenUsdc, DAI_whale } = await loadFixture(deployFixture);
+      const { uniswapV2FlashSwap, uniswapV2factory, DAI_whale, tokenIn, tokenOut } = await loadFixture(deployFixture);
 
+      const whaleDais = await tokenIn.balanceOf(DAI_whale.address);
+      const whaleWeths = await tokenOut.balanceOf(DAI_whale.address);
+      await tokenIn.approve(uniswapV2FlashSwap.address, whaleDais);
+      await tokenOut.approve(uniswapV2FlashSwap.address, whaleWeths);
+
+      const pair = uniswapV2factory.getPair(tokenIn.address, tokenOut.address);
+
+      const borrowAmount = ethers.utils.parseEther("1");
+
+      expect(await uniswapV2FlashSwap.flashSwap(tokenIn.address, borrowAmount)).to.changeTokenBalance(tokenIn, pair, borrowAmount)
     });
   });
 });
