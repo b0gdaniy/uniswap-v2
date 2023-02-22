@@ -7,10 +7,18 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2OptimalAmount.sol";
 import "./UniswapV2.sol";
 
+/// @title An UniswapV2 Optimal Amount contract
+/// @author r0ugeEngine
+/// @notice Optimized swaps for full exchange of tokens
+/// @dev Inherits the UniswapV2 Babylonian library and Pair interface implentation
 contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
     IERC20 private constant WETH =
         IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
+    /// @dev Calculate the optimal amount of swap
+    /// @param _tokenA token that user needs to swap
+    /// @param _tokenB token that user needs to get
+    /// @param _amountA amount of `_tokenA` that user needs to swap
     function optimalSwap(
         IERC20 _tokenA,
         IERC20 _tokenB,
@@ -43,6 +51,10 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
         _addLiquidity(_tokenA, _tokenB);
     }
 
+    /// @dev Without calculating the optimal amount of swap
+    /// @param _tokenA token that user needs to swap
+    /// @param _tokenB token that user needs to get
+    /// @param _amountA amount of `_tokenA` that user needs to swap
     function nonOptimalSwap(
         IERC20 _tokenA,
         IERC20 _tokenB,

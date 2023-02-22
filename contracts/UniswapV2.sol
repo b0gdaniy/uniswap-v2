@@ -6,12 +6,21 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 
 import "./interfaces/IUniswapV2.sol";
 
+/// @title An UniswapV2 contract
+/// @author r0ugeEngine
+/// @notice Swaps tokens and add liquidity
+/// @dev Inherits the UniswapV2 Router and Factory interfaces implentation
 contract UniswapV2 is IUniswapV2 {
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
     IUniswapV2Router02 internal constant UNISWAP_V2_ROUTER =
         IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
+    /// @dev Swaps `_tokenIn` to `_tokenOut`
+    /// @param _tokenIn token that user needs to swap
+    /// @param _tokenOut token that user needs to get
+    /// @param _to user that will receive the token
+    /// @param _deadline deadline of swap period
     function swap(
         IERC20 _tokenIn,
         IERC20 _tokenOut,
@@ -22,6 +31,12 @@ contract UniswapV2 is IUniswapV2 {
         _swap(_tokenIn, _tokenOut, _amountIn, _to, _deadline);
     }
 
+    /// @dev Adds liquidity to token pair `_tokenA` and `_tokenB`
+    /// @param _tokenA first token of pair
+    /// @param _tokenB second token of pair
+    ///@param _amountA amount of `_tokenA` that user need to add to LP
+    ///@param _amountB amount of `_tokenB` that user need to add to LP
+    /// @param _deadline deadline of swap period
     function addLiquidity(
         IERC20 _tokenA,
         IERC20 _tokenB,
@@ -32,6 +47,9 @@ contract UniswapV2 is IUniswapV2 {
         _addLiquidity(_tokenA, _tokenB, _amountA, _amountB, _deadline);
     }
 
+    /// @dev Removes liquidity from token pair `_tokenA` and `_tokenB`
+    /// @param _tokenA first token of pair
+    /// @param _tokenB second token of pair
     function removeLiquidity(address _tokenA, address _tokenB) external {
         _removeLiquidity(_tokenA, _tokenB);
     }
