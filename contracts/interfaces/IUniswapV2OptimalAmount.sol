@@ -6,13 +6,26 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./IUniswapV2.sol";
 
+/// @title An UniswapV2 Optimal Amount contract
+/// @author r0ugeEngine
+/// @notice Optimized swaps for full exchange of tokens
+/// @dev Inherits the UniswapV2 interface implementation
+/// @dev the Openzeppelin ERC20 interface implentation
 interface IUniswapV2OptimalAmount is IUniswapV2 {
+    /// @dev Calculate the optimal amount of swap
+    /// @param _tokenA token that user needs to swap
+    /// @param _tokenB token that user needs to get
+    /// @param _amountA amount of `_tokenA` that user needs to swap
     function optimalSwap(
         IERC20 _tokenA,
         IERC20 _tokenB,
         uint256 _amountA
     ) external;
 
+    /// @dev Without calculating the optimal amount of swap
+    /// @param _tokenA token that user needs to swap
+    /// @param _tokenB token that user needs to get
+    /// @param _amountA amount of `_tokenA` that user needs to swap
     function nonOptimalSwap(
         IERC20 _tokenA,
         IERC20 _tokenB,

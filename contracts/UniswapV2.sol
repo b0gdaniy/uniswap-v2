@@ -9,7 +9,7 @@ import "./interfaces/IUniswapV2.sol";
 /// @title An UniswapV2 contract
 /// @author r0ugeEngine
 /// @notice Swaps tokens and add liquidity
-/// @dev Inherits the UniswapV2 Router and Factory interfaces implentation
+/// @dev Imported the UniswapV2 Router and Factory interfaces implentations
 contract UniswapV2 is IUniswapV2 {
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
@@ -59,11 +59,11 @@ contract UniswapV2 is IUniswapV2 {
         IERC20 _tokenOut,
         uint256 _amount
     ) internal {
-        _tokenIn.approve(address(UNISWAP_V2_ROUTER), _amount);
-
         address[] memory path = new address[](2);
         path[0] = address(_tokenIn);
         path[1] = address(_tokenOut);
+
+        _tokenIn.approve(address(UNISWAP_V2_ROUTER), _amount);
 
         uint256[] memory amountsReceived = UNISWAP_V2_ROUTER
             .swapExactTokensForTokens(
@@ -84,10 +84,6 @@ contract UniswapV2 is IUniswapV2 {
         address _to,
         uint256 _deadline
     ) internal {
-        _tokenIn.transferFrom(msg.sender, address(this), _amountIn);
-
-        _tokenIn.approve(address(UNISWAP_V2_ROUTER), _amountIn);
-
         address[] memory path = new address[](2);
         path[0] = address(_tokenIn);
         path[1] = address(_tokenOut);
@@ -96,6 +92,10 @@ contract UniswapV2 is IUniswapV2 {
             _amountIn,
             path
         );
+
+        _tokenIn.transferFrom(msg.sender, address(this), _amountIn);
+
+        _tokenIn.approve(address(UNISWAP_V2_ROUTER), _amountIn);
 
         uint256[] memory amountsReceived = UNISWAP_V2_ROUTER
             .swapExactTokensForTokens(

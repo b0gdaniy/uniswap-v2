@@ -10,7 +10,8 @@ import "./UniswapV2.sol";
 /// @title An UniswapV2 Optimal Amount contract
 /// @author r0ugeEngine
 /// @notice Optimized swaps for full exchange of tokens
-/// @dev Inherits the UniswapV2 Babylonian library and Pair interface implentation
+/// @dev Inherits the UniswapV2 implementation
+/// @dev the UniswapV2 Babylonian library and Pair interface implentation
 contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
     IERC20 private constant WETH =
         IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
@@ -29,8 +30,6 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
             "One of tokens must be WETH"
         );
 
-        _tokenA.transferFrom(msg.sender, address(this), _amountA);
-
         address tokenPair = UNISWAP_V2_FACTORY.getPair(
             address(_tokenA),
             address(_tokenB)
@@ -46,6 +45,8 @@ contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
         } else {
             swapAmount = getSwapAmount(reserve1, _amountA);
         }
+
+        _tokenA.transferFrom(msg.sender, address(this), _amountA);
 
         _swap(_tokenA, _tokenB, swapAmount);
         _addLiquidity(_tokenA, _tokenB);

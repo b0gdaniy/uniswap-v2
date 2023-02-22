@@ -13,9 +13,9 @@ import "./interfaces/IUniswapV2FlashSwap.sol";
 /// @title An UniswapV2 Flash Swap contract
 /// @author r0ugeEngine
 /// @notice Get flash swaps for user
-/// @dev Inherits the UniswapV2 Calle, Factory and Pair interfaces implentation
-/// @dev Inherits the Openzeppelin ERC20 interface implentation
-contract UniswapV2FlashSwap is IUniswapV2Callee, IUniswapV2FlashSwap {
+/// @dev Inherits the UniswapV2 Calle interface implementation
+/// @dev Imported the Openzeppelin ERC20 interface, the UniswapV2 Factory and Pair interfaces implentations
+contract UniswapV2FlashSwap is IUniswapV2FlashSwap {
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
     IERC20 private constant WETH =

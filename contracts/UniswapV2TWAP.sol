@@ -11,7 +11,7 @@ import "./interfaces/IUniswapV2TWAP.sol";
 /// @title An UniswapV2 TWAP contract
 /// @author r0ugeEngine
 /// @notice TWAP(time-weighted average price) is an oracle that can get
-/// @dev Inherits the UniswapV2 Pair interface, FixedPoint, OracleLibrary libraries implentation
+/// @dev Imported the UniswapV2 Pair interface, FixedPoint, OracleLibrary libraries implentation
 contract UniswapV2TWAP is IUniswapV2TWAP {
     using FixedPoint for *;
 
