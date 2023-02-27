@@ -12,11 +12,15 @@ _Imported the UniswapV2 Router and Factory interfaces implentations_
 contract IUniswapV2Factory UNISWAP_V2_FACTORY
 ```
 
+Uniswap V2 Factory address
+
 ### UNISWAP_V2_ROUTER
 
 ```solidity
 contract IUniswapV2Router02 UNISWAP_V2_ROUTER
 ```
+
+Uniswap V2 Router 02 address
 
 ### swap
 
@@ -32,7 +36,7 @@ _Swaps `_tokenIn` to `_tokenOut`_
 | ---- | ---- | ----------- |
 | _tokenIn | contract IERC20 | token that user needs to swap |
 | _tokenOut | contract IERC20 | token that user needs to get |
-| _amountIn | uint256 |  |
+| _amountIn | uint256 | amount of tokenIn |
 | _to | address | user that will receive the token |
 | _deadline | uint256 | deadline of swap period |
 
@@ -111,6 +115,8 @@ Imported the Openzeppelin ERC20 interface, the UniswapV2 Factory and Pair interf
 ```solidity
 contract IUniswapV2Factory UNISWAP_V2_FACTORY
 ```
+
+Uniswap V2 Factory address
 
 ### flashSwap
 
@@ -207,11 +213,15 @@ _Imported the UniswapV2 Pair interface, FixedPoint, OracleLibrary libraries impl
 uint256 PERIOD
 ```
 
+Min period 10 seconds period
+
 ### pair
 
 ```solidity
 contract IUniswapV2Pair pair
 ```
+
+Address of token pair contract
 
 ### token0
 
@@ -219,11 +229,15 @@ contract IUniswapV2Pair pair
 contract IERC20 token0
 ```
 
+Token0 address
+
 ### token1
 
 ```solidity
 contract IERC20 token1
 ```
+
+Token1 address
 
 ### price0CumulativeLast
 
@@ -231,11 +245,15 @@ contract IERC20 token1
 uint256 price0CumulativeLast
 ```
 
+Last cumulative price for token0
+
 ### price1CumulativeLast
 
 ```solidity
 uint256 price1CumulativeLast
 ```
+
+Last cumulative price for token1
 
 ### blockTimestampLast
 
@@ -243,11 +261,17 @@ uint256 price1CumulativeLast
 uint32 blockTimestampLast
 ```
 
+Last timestamp
+
 ### price0Average
 
 ```solidity
 struct FixedPoint.uq112x112 price0Average
 ```
+
+Average price for token0
+
+_Used FixedPoint library because solidity don't have floating variables_
 
 ### price1Average
 
@@ -255,11 +279,18 @@ struct FixedPoint.uq112x112 price0Average
 struct FixedPoint.uq112x112 price1Average
 ```
 
+Average price for token1
+
+_Used FixedPoint library because solidity don't have floating variables_
+
 ### constructor
 
 ```solidity
 constructor(contract IUniswapV2Pair _pair) public
 ```
+
+_Using pair contract for finding token0, token1,
+price0CumulativeLast, price1CumulativeLast, blockTimestampLast_
 
 ### update
 
@@ -338,7 +369,7 @@ _Swaps `_tokenIn` to `_tokenOut`_
 | ---- | ---- | ----------- |
 | _tokenIn | contract IERC20 | token that user needs to swap |
 | _tokenOut | contract IERC20 | token that user needs to get |
-| _amountIn | uint256 |  |
+| _amountIn | uint256 | amount of tokenIn |
 | _to | address | user that will receive the token |
 | _deadline | uint256 | deadline of swap period |
 
