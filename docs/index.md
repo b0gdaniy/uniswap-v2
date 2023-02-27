@@ -196,9 +196,13 @@ function getSwapAmount(uint256 r, uint256 a) public pure returns (uint256)
 ```
 
 s = optimal swap amount
+
 r = amount of reserve for a token a
+
 a = amount of token a the user currently has (not added to reserve yet)
+
 f = swap percent
+
 s = (sqrt(((2 - f)r)^2 + 4(1 - f)ar) - (2 - f)r) / (2(1 - f))
 
 ## UniswapV2TWAP
