@@ -71,14 +71,6 @@ describe("UniswapV2", function () {
     );
     await uniswapV2OptimalAmount.deployed();
 
-    const UniswapV2FlashSwap = await ethers.getContractFactory(
-      "UniswapV2FlashSwap",
-      DAI_whale
-    );
-    const uniswapV2FlashSwap: UniswapV2FlashSwap =
-      await UniswapV2FlashSwap.deploy();
-    await uniswapV2FlashSwap.deployed();
-
     const uniswapv2Router: IUniswapV2Router02 =
       IUniswapV2Router02__factory.connect(UNISWAPV2_ROUTER_address, DAI_whale);
 
@@ -93,6 +85,14 @@ describe("UniswapV2", function () {
       WETH_address
     );
     const pair: IERC20 = IERC20__factory.connect(pairAddress, otherAcc);
+
+    const UniswapV2FlashSwap = await ethers.getContractFactory(
+      "UniswapV2FlashSwap",
+      DAI_whale
+    );
+    const uniswapV2FlashSwap: UniswapV2FlashSwap =
+      await UniswapV2FlashSwap.deploy(DAI_address);
+    await uniswapV2FlashSwap.deployed();
 
     return {
       uniswapV2,
@@ -394,17 +394,17 @@ describe("UniswapV2", function () {
       await tokenIn.approve(uniswapV2FlashSwap.address, whaleDais);
       await tokenOut.approve(uniswapV2FlashSwap.address, whaleWeths);
 
-      const pair = uniswapV2factory.getPair(tokenIn.address, tokenOut.address);
+      const pair = await uniswapV2factory.getPair(tokenIn.address, tokenOut.address);
 
       const borrowAmount = ethers.utils.parseEther("1");
 
       expect(
-        await uniswapV2FlashSwap.flashSwap(tokenIn.address, borrowAmount)
+        await uniswapV2FlashSwap.flashSwap(borrowAmount)
       ).to.changeTokenBalance(tokenIn, pair, borrowAmount);
     });
 
     it("Flash swaps uniswapV2Call handler", async function () {
-      const { uniswapV2FlashSwap, DAI_whale, tokenIn } =
+      const { uniswapV2FlashSwap, DAI_whale } =
         await loadFixture(deployFixture);
 
       await expect(
@@ -418,15 +418,64 @@ describe("UniswapV2", function () {
           0,
           "0x00"
         )
-      ).to.be.reverted;
+      ).to.be.revertedWith("Only UniswapV2Pair!");
 
       await expect(
-        uniswapV2FlashSwap.flashSwap(ethers.constants.AddressZero, 10)
-      ).to.be.revertedWith("Invalid pair!");
-
-      await expect(
-        uniswapV2FlashSwap.flashSwap(tokenIn.address, 0)
+        uniswapV2FlashSwap.flashSwap(0)
       ).to.be.revertedWith("Amount == 0!");
+    });
+
+    it("Can not deploy with address(0)", async function () {
+      const { DAI_whale } =
+        await loadFixture(deployFixture);
+
+      const UniswapV2FlashSwap = await ethers.getContractFactory(
+        "UniswapV2FlashSwap",
+        DAI_whale
+      );
+      await expect(
+        UniswapV2FlashSwap.deploy(ethers.constants.AddressZero)).to.be.revertedWith("Invalid pair!");
+    });
+
+    it("Can not use pair instead of WETH", async function () {
+      const {
+        uniswapV2FlashSwap,
+        uniswapV2factory,
+        DAI_whale,
+        tokenIn,
+        tokenOut,
+      } = await loadFixture(deployFixture);
+
+      const whaleDais = await tokenIn.balanceOf(DAI_whale.address);
+      const whaleWeths = await tokenOut.balanceOf(DAI_whale.address);
+
+      await (await tokenIn.transfer(uniswapV2FlashSwap.address, whaleDais)).wait();
+      await (await tokenOut.transfer(uniswapV2FlashSwap.address, whaleWeths)).wait();
+
+      const pairAddress = await uniswapV2factory.getPair(tokenIn.address, tokenOut.address);
+      const pair: IUniswapV2Pair = await ethers.getContractAt("IUniswapV2Pair", pairAddress);
+
+      const borrowAmount = ethers.utils.parseEther("1");
+
+      await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [uniswapV2FlashSwap.address],
+
+      });
+      await hre.network.provider.send("hardhat_setBalance", [
+        uniswapV2FlashSwap.address,
+        "0x3635C9ADC5DEA00000",
+      ]);
+      const flashSwap = await ethers.getSigner(uniswapV2FlashSwap.address);
+
+      await tokenIn.approve(uniswapV2FlashSwap.address, whaleDais);
+      await tokenOut.approve(uniswapV2FlashSwap.address, whaleWeths);
+
+
+      const data = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'address'], [ethers.constants.AddressZero, ethers.constants.AddressZero]);
+
+      await expect(pair.connect(flashSwap).swap(0, borrowAmount, uniswapV2FlashSwap.address, data)).to.be.revertedWith("Only WETH to borrow");
     });
   });
 });
