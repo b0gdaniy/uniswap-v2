@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 // OpenZepelin
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -25,6 +25,8 @@ contract UniswapV2FlashSwap is IUniswapV2FlashSwap {
     /// @param _tokenBorrow token that user needs to borrow
     /// @param _amount amount of `_tokenBorrow` that user needs borrow
     function flashSwap(address _tokenBorrow, uint256 _amount) external {
+        require(_amount > 0, "Amount == 0!");
+
         address pair = UNISWAP_V2_FACTORY.getPair(_tokenBorrow, address(WETH));
 
         require(pair != address(0), "Invalid pair!");
@@ -50,12 +52,13 @@ contract UniswapV2FlashSwap is IUniswapV2FlashSwap {
         uint256, // amount1
         bytes calldata data
     ) external {
+        require(sender == address(this), "Only UniswapV2FlashSwap!");
+
         address token0 = IUniswapV2Pair(msg.sender).token0();
         address token1 = IUniswapV2Pair(msg.sender).token1();
         address pair = UNISWAP_V2_FACTORY.getPair(token0, token1);
 
         require(msg.sender == pair, "Only UniswapV2Pair!");
-        require(sender == address(this), "Only UniswapV2FlashSwap!");
 
         (address tokenBorrow, address caller, uint256 amount) = abi.decode(
             data,
