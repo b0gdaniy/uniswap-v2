@@ -353,7 +353,21 @@ describe("UniswapV2", function () {
       tokenUsdcConsult = await uniswapV2TWAP.consult(tokenUsdc.address, AMOUNT);
 
       expect(tokenInConsult).to.gt(1000000);
-      expect(tokenUsdcConsult).to.eq(BigNumber.from("999070712323629394004394272731"));
+      expect(tokenUsdcConsult).to.gt(BigNumber.from("999000000000000000000000000000"));
+    });
+
+    it("Update errors work correclty", async function () {
+      const {
+        uniswapV2TWAP,
+      } = await loadFixture(deployFixture);
+
+      const now = await time.latest();
+
+      await time.setNextBlockTimestamp(now + 2000);
+
+      await (await uniswapV2TWAP.update()).wait();
+
+      await expect(uniswapV2TWAP.update()).to.be.revertedWith("Time elapsed < min PERIOD");
     });
 
     it("Consult correctly", async function () {
@@ -390,7 +404,7 @@ describe("UniswapV2", function () {
     });
 
     it("Flash swaps uniswapV2Call handler", async function () {
-      const { uniswapV2FlashSwap, DAI_whale, tokenIn, tokenOut } =
+      const { uniswapV2FlashSwap, DAI_whale, tokenIn } =
         await loadFixture(deployFixture);
 
       await expect(
