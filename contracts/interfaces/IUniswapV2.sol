@@ -33,6 +33,7 @@ interface IUniswapV2 {
     /// @dev Swaps `_tokenIn` to `_tokenOut`
     /// @param _tokenIn token that user needs to swap
     /// @param _tokenOut token that user needs to get
+    /// @param _amountIn amount of tokenIn
     /// @param _to user that will receive the token
     /// @param _deadline deadline of swap period
     function swap(

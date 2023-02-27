@@ -16,8 +16,10 @@ import "./interfaces/IUniswapV2FlashSwap.sol";
 /// @dev Inherits the UniswapV2 Calle interface implementation
 /// @dev Imported the Openzeppelin ERC20 interface, the UniswapV2 Factory and Pair interfaces implentations
 contract UniswapV2FlashSwap is IUniswapV2FlashSwap {
+    ///@notice Uniswap V2 Factory address
     IUniswapV2Factory internal constant UNISWAP_V2_FACTORY =
         IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
+    ///@notice WETH token address
     IERC20 private constant WETH =
         IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 

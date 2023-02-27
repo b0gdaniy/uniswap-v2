@@ -15,20 +15,35 @@ import "./interfaces/IUniswapV2TWAP.sol";
 contract UniswapV2TWAP is IUniswapV2TWAP {
     using FixedPoint for *;
 
+    ///@notice Min period 10 seconds period
     uint256 public constant PERIOD = 10;
 
+    ///@notice Address of token pair contract
     IUniswapV2Pair public immutable pair;
+    ///@notice Token0 address
     IERC20 public immutable token0;
+    ///@notice Token1 address
     IERC20 public immutable token1;
 
+    ///@notice Last cumulative price for token0
     uint256 public price0CumulativeLast;
+    ///@notice Last cumulative price for token1
     uint256 public price1CumulativeLast;
 
+    ///@notice Last timestamp
     uint32 public blockTimestampLast;
 
+    ///@notice Average price for token0
+    ///@dev Used FixedPoint library because solidity don't have floating variables
     FixedPoint.uq112x112 public price0Average;
+    ///@notice Average price for token1
+    ///@dev Used FixedPoint library because solidity don't have floating variables
     FixedPoint.uq112x112 public price1Average;
 
+    /**
+     * @dev Using pair contract for finding token0, token1,
+     * price0CumulativeLast, price1CumulativeLast, blockTimestampLast
+     */
     constructor(IUniswapV2Pair _pair) {
         pair = _pair;
 

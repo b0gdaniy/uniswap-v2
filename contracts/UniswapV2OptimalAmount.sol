@@ -13,6 +13,7 @@ import "./UniswapV2.sol";
 /// @dev Inherits the UniswapV2 implementation
 /// @dev the UniswapV2 Babylonian library and Pair interface implentation
 contract UniswapV2OptimalAmount is UniswapV2, IUniswapV2OptimalAmount {
+    ///@notice WETH token address
     IERC20 private constant WETH =
         IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
