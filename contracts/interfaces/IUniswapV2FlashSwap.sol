@@ -11,16 +11,9 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Callee.sol";
 /// @notice Get flash swaps for user
 /// @dev Imported the Openzeppelin ERC20 interface, the UniswapV2 Calle interface implentations
 interface IUniswapV2FlashSwap is IUniswapV2Callee {
-    event FlashSwap(
-        address indexed sender,
-        address indexed token0,
-        address indexed token1,
-        uint256 amount0,
-        uint256 admount1
-    );
+    event FlashSwap(address indexed sender, uint256 admount);
 
     /// @dev Calls the FlashSwap feature from IUniswapV2Callee
-    /// @param _tokenBorrow token that user needs to borrow
-    /// @param _amount amount of `_tokenBorrow` that user needs borrow
-    function flashSwap(address _tokenBorrow, uint256 _amount) external;
+    /// @param _amountWeth amount of Weths that user needs borrow
+    function flashSwap(uint256 _amountWeth) external;
 }
