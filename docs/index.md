@@ -118,10 +118,16 @@ contract IUniswapV2Factory UNISWAP_V2_FACTORY
 
 Uniswap V2 Factory address
 
+### constructor
+
+```solidity
+constructor(address token) public
+```
+
 ### flashSwap
 
 ```solidity
-function flashSwap(address _tokenBorrow, uint256 _amount) external
+function flashSwap(uint256 _amountWeth) external
 ```
 
 _Calls the FlashSwap feature from IUniswapV2Callee_
@@ -130,13 +136,12 @@ _Calls the FlashSwap feature from IUniswapV2Callee_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| _tokenBorrow | address | token that user needs to borrow |
-| _amount | uint256 | amount of `_tokenBorrow` that user needs borrow |
+| _amountWeth | uint256 | amount of Weths that user needs borrow |
 
 ### uniswapV2Call
 
 ```solidity
-function uniswapV2Call(address sender, uint256, uint256, bytes data) external
+function uniswapV2Call(address sender, uint256 amount0, uint256 amount1, bytes data) external
 ```
 
 _Can be called from IUniswapV2Pair to calculate borrow amount_
@@ -146,8 +151,8 @@ _Can be called from IUniswapV2Pair to calculate borrow amount_
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | sender | address | this address |
-|  | uint256 |  |
-|  | uint256 |  |
+| amount0 | uint256 |  |
+| amount1 | uint256 |  |
 | data | bytes | that encoded in {flashSwap} |
 
 ## UniswapV2OptimalAmount
@@ -196,13 +201,9 @@ function getSwapAmount(uint256 r, uint256 a) public pure returns (uint256)
 ```
 
 s = optimal swap amount
-
 r = amount of reserve for a token a
-
 a = amount of token a the user currently has (not added to reserve yet)
-
 f = swap percent
-
 s = (sqrt(((2 - f)r)^2 + 4(1 - f)ar) - (2 - f)r) / (2(1 - f))
 
 ## UniswapV2TWAP
@@ -419,13 +420,13 @@ _Imported the Openzeppelin ERC20 interface, the UniswapV2 Calle interface implen
 ### FlashSwap
 
 ```solidity
-event FlashSwap(address sender, address token0, address token1, uint256 amount0, uint256 admount1)
+event FlashSwap(address sender, uint256 admount)
 ```
 
 ### flashSwap
 
 ```solidity
-function flashSwap(address _tokenBorrow, uint256 _amount) external
+function flashSwap(uint256 _amountWeth) external
 ```
 
 _Calls the FlashSwap feature from IUniswapV2Callee_
@@ -434,8 +435,7 @@ _Calls the FlashSwap feature from IUniswapV2Callee_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| _tokenBorrow | address | token that user needs to borrow |
-| _amount | uint256 | amount of `_tokenBorrow` that user needs borrow |
+| _amountWeth | uint256 | amount of Weths that user needs borrow |
 
 ## IUniswapV2OptimalAmount
 
